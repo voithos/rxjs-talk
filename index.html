@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/white.css">
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <!-- ==== Slides start ==== -->
+
+        <section data-markdown>
+          <textarea data-template>
+            # Observables for fun and profit(?)
+
+            by voithos
+
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## What are observables?
+
+            | | Sync | Async |
+            |------------------|---------|-------------|
+            | **Single value** | scalars | Promises    |
+            | **Multi value**  | arrays  | Observables <!-- .element: class="fragment highlight-red" data-fragment-index="1" --> |
+
+            <aside class="notes">
+              Notes:
+              - "conceptually"
+              - arrays encode a set of multiple values/scalars
+              - Promises encode a single asynchronous value
+              - Observables encode multiple values over time
+              - can represent several different kinds of things:
+                - events
+                - changing state
+                - asynchronously-fetched set of data
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## Why use them?
+
+            Observables are powerful:
+
+            - can encode change over time, or events
+            - support error-handling
+            - support cancellation
+            - support laziness (key terms: "cold", "hot")
+            - come with a rich set of operators
+
+            <aside class="notes">
+              Notes:
+              - unlike Promises, observables aren't always async
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## What does this have to do with Angular?
+
+            Observables are used extensively in Angular for its APIs and
+            patterns. Examples:
+
+            - route parameters
+            - `HttpClient`
+            - `AsyncPipe` (more on that later)
+
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## RxJS
+
+            RxJS is a library that implements observables, and is used by Angular.
+
+            <aside class="notes">
+              Notes:
+              - library that implements observables, and comes with a set of operators
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## Anatomy of an observable
+
+            <pre><code class="typescript" data-trim data-noescape>
+            <span class="fragment highlight-current-red" data-fragment-index="4">const subscription =</span>
+                <span class="fragment highlight-current-red" data-fragment-index="1">Observable.interval(1000)</span>
+                <span class="fragment highlight-current-red" data-fragment-index="2">.pipe(
+                    map(i => Math.random() * i)
+                    filter(x => x < 1)
+                )</span>
+                <span class="fragment highlight-current-red" data-fragment-index="3">.subscribe(x => console.log(`Logged ${x}`));</span>
+            </code></pre>
+
+            <div style="position: relative">
+
+              <span>Observable</span> <!-- .element: class="fragment current-visible" data-fragment-index="1" -->
+
+              <span>Operators</span> <!-- .element: class="fragment current-visible" data-fragment-index="2" -->
+
+              <span>Observer</span> <!-- .element: class="fragment current-visible" data-fragment-index="3" -->
+
+              <span>Subscription</span> <!-- .element: class="fragment current-visible" data-fragment-index="4" -->
+
+            </div>
+
+            <aside class="notes">
+              Notes:
+              - 1: the observable itself, represents the stream of values
+              - 2: operators, transform the stream
+              - 3: observer, receives emissions from the observable
+              - 4: subscription, represents the execution of the observable, can be unsubscribed from
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## Anatomy of an observer
+
+            ```typescript
+            interface Observer<T> {
+              next: (value: T) => void;
+              error: (err: any) => void;
+              complete: () => void;
+            }
+            ```
+
+            <aside class="notes">
+              Notes:
+              - observers are very simple - effectively just 3 operations after subscribing
+              - next: emits an event / value
+              - error: is called if the observable errors
+              - complete: is called if the observable completes successfully
+              - in general an errored/completed observable execution can no longer emit
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## Marble diagrams
+
+            ![marble1](img/marble1.png)
+            `map(i => i.toFixed(1))`
+            ![marble2](img/marble2.png)
+
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            # Operators
+
+            There are a lot
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## Creation operators
+
+            <aside class="notes">
+              Notes:
+              - used to create observables from non-observable values
+              - e.g. primitives, promises, or even events
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `of`, `interval`, `fromPromise`
+
+            Lorem ipsum
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## Transformation operators
+
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `map`
+
+            Lorem ipsum
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `scan`
+
+            Lorem ipsum
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## Filtering operators
+
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `filter`
+
+            Lorem ipsum
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `take`, `takeUntil`
+
+            Lorem ipsum
+            <aside class="notes">
+              Notes:
+              - also simple operators like first(), last()
+              - important! these auto-unsubscribe
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## Combination operators
+
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `merge`
+
+            Lorem ipsum
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `concat`
+
+            Lorem ipsum
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `forkJoin`
+
+            Lorem ipsum
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## Higher-order operators
+
+            <aside class="notes">
+              Notes:
+              - observables are streams of values
+              - naturally, the values can be other observables
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `switchMap`
+
+            Lorem ipsum
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `mergeMap`, `concatMap`
+
+            Lorem ipsum
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## Utility operators
+
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `tap`
+
+            Lorem ipsum
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## And more!
+
+            Great resource: https://www.learnrxjs.io/
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            # Patterns
+
+            <aside class="notes">
+              Notes:
+              - dealing with subscriptions
+              - dealing with state and state changes
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## Passing values to the template
+
+            Lorem ipsum
+
+            ## But actually, NOPE <!-- .element: class="fragment" data-fragment-index="1" -->
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## Using `AsyncPipe`
+
+            Lorem ipsum
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## Managing state-over-time
+
+            Lorem ipsum
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            # Thanks!
+
+            <sup>Visualizations made with https://rxviz.com/</sup>
+
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <!-- ==== Slides end ==== -->
+      </div>
+    </div>
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+    <script>
+      Reveal.initialize({
+        history: true,
+        dependencies: [
+          // Interpret Markdown in <section> elements
+          { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+
+          // Syntax highlight for <code> elements
+          { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+
+          // Speaker notes
+          { src: 'plugin/notes/notes.js', async: true }
+        ]
+      });
+    </script>
+  </body>
+</html>
