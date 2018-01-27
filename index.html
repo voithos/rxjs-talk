@@ -4,6 +4,18 @@
     <link rel="stylesheet" href="css/reveal.css">
     <link rel="stylesheet" href="css/theme/white.css">
     <link rel="stylesheet" href="lib/css/zenburn.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/5.5.6/Rx.js"></script>
+    <script src="js/presentation.js"></script>
+    <style>
+      .caption {
+        bottom: 0px;
+        right: 0px;
+        position: absolute;
+      }
+      iframe {
+        width: 100%;
+      }
+    </style>
   </head>
   <body>
     <div class="reveal">
@@ -12,10 +24,9 @@
 
         <section data-markdown>
           <textarea data-template>
-            # Observables for fun and profit(?)
+            # The Subject was Observables
 
-            by voithos
-
+            <small class="caption">by Zaven Muradyan</small>
             <aside class="notes">
               Notes:
             </aside>
@@ -26,17 +37,33 @@
           <textarea data-template>
             ## What are observables?
 
-            | | Sync | Async |
-            |------------------|---------|-------------|
-            | **Single value** | scalars | Promises    |
-            | **Multi value**  | arrays  | Observables <!-- .element: class="fragment highlight-red" data-fragment-index="1" --> |
+            ![wormhole](img/wormhole.jpg) <!-- .element: class="fragment" data-fragment-index="1" -->
 
             <aside class="notes">
               Notes:
-              - "conceptually"
+              - basically spacetime
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## No, seriously
+
+            | | _Single value_ | _Multi value_ |
+            |-------------------|----------|-------------|
+            | **Synchronous**   | scalars  | arrays      |
+            | **Asynchronous**  | Promises | Observables <!-- .element: class="fragment highlight-red" data-fragment-index="1" --> |
+
+            <aside class="notes">
+              Notes:
+              - this is one mental model
+              - time vs space
+              - scalars are just singular, sync values
               - arrays encode a set of multiple values/scalars
               - Promises encode a single asynchronous value
               - Observables encode multiple values over time
+              - support concurrency
               - can represent several different kinds of things:
                 - events
                 - changing state
@@ -47,19 +74,69 @@
 
         <section data-markdown>
           <textarea data-template>
+            ## Space and time
+
+            ```typescript
+            // A simple value, synchronous in nature.
+            const scalar = 123;
+
+            // Multiple values, synchronous. Adds a dimension of space.
+            const array = ['H', 'e', 'l', 'l', 'o'];
+
+            // Single value, asynchronous. Adds a dimension of time.
+            const promise = new Promise(
+                    (resolve) => setTimeout(resolve, 1000));
+            promise.then(() => { ... });
+
+            // Multiple values, asynchronous.
+            // Adds both space and time dimensions.
+            const observable = Observable.interval(1000);
+            observable.subscribe(() => { ... });
+            ```
+
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## But also...
+
+            | | _Eager_ | _Lazy_ |
+            |-------------------|----------|-------------|
+            | **Synchronous**   | scalars  | functions   |
+            | **Asynchronous**  | Promises | Observables <!-- .element: class="fragment highlight-red" data-fragment-index="1" --> |
+
+            <aside class="notes">
+              Notes:
+              - observables are lazy
+              - represent executions of some operation at a later point in time
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
             ## Why use them?
 
             Observables are powerful:
 
-            - can encode change over time, or events
-            - support error-handling
-            - support cancellation
-            - support laziness (key terms: "cold", "hot")
-            - come with a rich set of operators
+            - Can encode change over time, events, finite or infinite
+            - Support error-handling
+            - Support cancellation
+            - Support laziness (key terms: "cold", "hot")
+            - Come with a rich set of operators
 
             <aside class="notes">
               Notes:
-              - unlike Promises, observables aren't always async
+              - in some ways higher-level than promises
+                - can contain multiple values
+                - support cancellation
+              - but actually lower-level
+                - can implement promises with observables, but not the other way around
+                - observable emissions can actually be synchronous
             </aside>
           </textarea>
         </section>
@@ -71,12 +148,13 @@
             Observables are used extensively in Angular for its APIs and
             patterns. Examples:
 
-            - route parameters
+            - Route parameters
             - `HttpClient`
             - `AsyncPipe` (more on that later)
 
             <aside class="notes">
               Notes:
+              - Angular has built-in support for rendering the results of async operations
             </aside>
           </textarea>
         </section>
@@ -85,11 +163,13 @@
           <textarea data-template>
             ## RxJS
 
-            RxJS is a library that implements observables, and is used by Angular.
+            RxJS is a library that implements observables, with a goal of
+            modeling/following the [proposed spec](https://github.com/tc39/proposal-observable).
 
             <aside class="notes">
               Notes:
-              - library that implements observables, and comes with a set of operators
+              - comes with a rich set of operators
+              - incidentally, there is also discussion about introducing observables via the WHATWG
             </aside>
           </textarea>
         </section>
@@ -102,7 +182,7 @@
             <span class="fragment highlight-current-red" data-fragment-index="4">const subscription =</span>
                 <span class="fragment highlight-current-red" data-fragment-index="1">Observable.interval(1000)</span>
                 <span class="fragment highlight-current-red" data-fragment-index="2">.pipe(
-                    map(i => Math.random() * i)
+                    map(x => Math.random() * x)
                     filter(x => x < 1)
                 )</span>
                 <span class="fragment highlight-current-red" data-fragment-index="3">.subscribe(x => console.log(`Logged ${x}`));</span>
@@ -126,6 +206,7 @@
               - 2: operators, transform the stream
               - 3: observer, receives emissions from the observable
               - 4: subscription, represents the execution of the observable, can be unsubscribed from
+                - effectively "calls" the observable
             </aside>
           </textarea>
         </section>
@@ -144,11 +225,12 @@
 
             <aside class="notes">
               Notes:
-              - observers are very simple - effectively just 3 operations after subscribing
-              - next: emits an event / value
+              - observers are simple - effectively just 3 operations after subscribing
+              - next: is called with the next emission
               - error: is called if the observable errors
               - complete: is called if the observable completes successfully
               - in general an errored/completed observable execution can no longer emit
+              - `.subscribe()` method can take next/error/complete fns, or an observer obj
             </aside>
           </textarea>
         </section>
@@ -158,11 +240,19 @@
             ## Marble diagrams
 
             ![marble1](img/marble1.png)
-            `map(i => i.toFixed(1))`
+            `map(x => x.toFixed(1))`
             ![marble2](img/marble2.png)
 
             <aside class="notes">
               Notes:
+              - subscription happens at the beginning
+              - emissions
+              - | is completion
+              - X is error
+              - none of the operations are dependent on one another, and all are optional
+                - don't have to emit before completing
+                - might never complete
+                - etc
             </aside>
           </textarea>
         </section>
@@ -174,6 +264,7 @@
             There are a lot
             <aside class="notes">
               Notes:
+              - will attempt to build-up from simple to complex
             </aside>
           </textarea>
         </section>
@@ -192,7 +283,94 @@
 
         <section data-markdown>
           <textarea data-template>
-            ## `of`, `interval`, `fromPromise`
+            ## `of`, `interval`, `from`
+
+            ```typescript
+            // Outputs: 1, 2, 3, 4
+            Observable.of(1, 2, 3, 4)
+                .subscribe((x) => console.log(x));
+
+            // Outputs: 0, 1, 2, 3, ...
+            Observable.interval(500)
+                .subscribe((x) => console.log(x));
+
+            // Converts the Promise to an observable.
+            Observable.from(fetch('spacetime.jpg'))
+                .subscribe((blob) => ...);
+            ```
+            <aside class="notes">
+              Notes:
+              - `of` just outputs what is passed to it
+              - `interval` outputs the index
+              - `from` can be used for promises, arrays, etc
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `empty`, `throw`, `never`
+
+            - `empty` - never emits, completes immediately
+            - `throw` - never emits, errors immediately
+            - `never` - never emits, never completes, never errors
+            <aside class="notes">
+              Notes:
+              - not immediately useful, but handy when composing observables (next)
+              - effects take place upon execution
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## Utility operators
+
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `tap`
+
+            ```typescript
+            Observable.
+            ```
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `delay`, `timeout`
+
+            ```typescript
+            Observable.of(1).pipe(
+                // Delays the emissions by 1.5s.
+                delay(1500),
+
+                // Errors if nothing is emitted after 1s.
+                timeout(1000),
+            )
+            .subscribe({
+              // Outputs: TimeoutError
+              error: (err) => { console.log(err); }
+            });
+            ```
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `delay`, `timeout`
 
             Lorem ipsum
             <aside class="notes">
@@ -256,13 +434,12 @@
 
         <section data-markdown>
           <textarea data-template>
-            ## `take`, `takeUntil`
+            ## `take`, `takeUntil`, `first`
 
             Lorem ipsum
             <aside class="notes">
               Notes:
-              - also simple operators like first(), last()
-              - important! these auto-unsubscribe
+              - important! these complete automatically and thus auto-unsubscribe
             </aside>
           </textarea>
         </section>
@@ -312,6 +489,28 @@
 
         <section data-markdown>
           <textarea data-template>
+            ## `combineLatest`
+
+            Lorem ipsum
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `withLatestFrom`
+
+            Lorem ipsum
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
             ## Higher-order operators
 
             <aside class="notes">
@@ -324,7 +523,7 @@
 
         <section data-markdown>
           <textarea data-template>
-            ## `switchMap`
+            ## Mapping to observables
 
             Lorem ipsum
             <aside class="notes">
@@ -335,7 +534,10 @@
 
         <section data-markdown>
           <textarea data-template>
-            ## `mergeMap`, `concatMap`
+            ## Flattening higher-order observables
+
+            - `mergeAll()`
+            - `concatAll()`
 
             Lorem ipsum
             <aside class="notes">
@@ -346,7 +548,30 @@
 
         <section data-markdown>
           <textarea data-template>
-            ## Utility operators
+            ## `switchAll`
+
+            Lorem ipsum
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `mergeMap`, `concatMap`, `switchMap`
+
+            Lorem ipsum
+            <aside class="notes">
+              Notes:
+              - `switchMap` is usually a better default choice because it has cancellation built-in
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## Multicasting operators
 
             <aside class="notes">
               Notes:
@@ -356,9 +581,55 @@
 
         <section data-markdown>
           <textarea data-template>
-            ## `tap`
+            ## Sharing execution
 
+            All observables so far have been lazy, "cold"
+
+            Every subscription creates a separate execution
+
+            In many cases, we want to share a single execution
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `Subject`
+
+            Both an Observer and an Observable
+
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `share`
+
+            Creates a subject internally, and keeps track of the count of
+            subscribers.
+
+            ## But actually, NOPE <!-- .element: class="fragment" style="color: #ff2c2d;" data-fragment-index="1" -->
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `shareReplay`
+
+            Similar to `share`, but replays emissions and never re-subscribes
+            to the source observable.
+
+            ```typescript
             Lorem ipsum
+            ```
             <aside class="notes">
               Notes:
             </aside>
@@ -382,8 +653,6 @@
 
             <aside class="notes">
               Notes:
-              - dealing with subscriptions
-              - dealing with state and state changes
             </aside>
           </textarea>
         </section>
@@ -394,7 +663,7 @@
 
             Lorem ipsum
 
-            ## But actually, NOPE <!-- .element: class="fragment" data-fragment-index="1" -->
+            ## But actually, NOPE <!-- .element: class="fragment" style="color: #ff2c2d;" data-fragment-index="1" -->
             <aside class="notes">
               Notes:
             </aside>
@@ -404,6 +673,19 @@
         <section data-markdown>
           <textarea data-template>
             ## Using `AsyncPipe`
+
+            Lorem ipsum
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## Managing subscriptions
+
+            If an explicit `.subscribe()` is needed
 
             Lorem ipsum
             <aside class="notes">
