@@ -288,19 +288,20 @@
             ```typescript
             // Outputs: 1, 2, 3, 4
             Observable.of(1, 2, 3, 4)
-                .subscribe((x) => console.log(x));
+                .subscribe(x => console.log(x));
 
             // Outputs: 0, 1, 2, 3, ...
             Observable.interval(500)
-                .subscribe((x) => console.log(x));
+                .subscribe(x => console.log(x));
 
             // Converts the Promise to an observable.
             Observable.from(fetch('spacetime.jpg'))
-                .subscribe((blob) => ...);
+                .subscribe(blob => ...);
             ```
             <aside class="notes">
               Notes:
               - `of` just outputs what is passed to it
+              - synchronous upon subscription
               - `interval` outputs the index
               - `from` can be used for promises, arrays, etc
             </aside>
@@ -337,10 +338,19 @@
             ## `tap`
 
             ```typescript
-            Observable.
+            const mouseClicks = ...;
+            mouseClicks.pipe(
+                // `tap` can be used to perform a side effect
+                // without altering the underlying observable.
+                tap(v => logToServer(v)),
+            )
+            .subscribe(v => { ... });
             ```
             <aside class="notes">
               Notes:
+              - makes side-effects more clear than they would otherwise
+              - might be useful for temporary debugging
+              - try to avoid
             </aside>
           </textarea>
         </section>
@@ -359,7 +369,7 @@
             )
             .subscribe({
               // Outputs: TimeoutError
-              error: (err) => { console.log(err); }
+              error: err => { console.log(err); }
             });
             ```
             <aside class="notes">
@@ -372,7 +382,15 @@
           <textarea data-template>
             ## `delay`, `timeout`
 
-            Lorem ipsum
+            ![delaytimeout1](img/delaytimeout1.gif)
+
+            `delay(1500)`
+
+            ![delaytimeout2](img/delaytimeout2.gif)
+
+            `timeout(1000)`
+
+            ![delaytimeout3](img/delaytimeout3.gif)
             <aside class="notes">
               Notes:
             </aside>
@@ -393,7 +411,29 @@
           <textarea data-template>
             ## `map`
 
-            Lorem ipsum
+            ```typescript
+            Observable.interval(750).pipe(
+                // Transforms each value to another.
+                map(i => i * 10),
+            )
+            .subscribe(v => { ... });
+            ```
+            <aside class="notes">
+              Notes:
+              - also useful for picking properties off objects
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `map`
+
+            ![map1](img/map1.gif)
+
+            `map(i => i * 10)`
+
+            ![map2](img/map2.gif)
             <aside class="notes">
               Notes:
             </aside>
@@ -404,7 +444,32 @@
           <textarea data-template>
             ## `scan`
 
-            Lorem ipsum
+            ```typescript
+            // Changes in temp over time.
+            const deltas = ...;
+            const currentTemp = 40;
+            deltas.pipe(
+                // Reduces over time.
+                scan((acc, delta) => acc + delta, currentTemp),
+            )
+            .subscribe(temp => { ... });
+            ```
+            <aside class="notes">
+              Notes:
+              - reduce-over-time, or "online" reduce
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `scan`
+
+            ![scan1](img/scan1.gif)
+
+            `scan((acc, delta) => acc + delta)`
+
+            ![scan2](img/scan2.gif)
             <aside class="notes">
               Notes:
             </aside>
@@ -425,7 +490,29 @@
           <textarea data-template>
             ## `filter`
 
-            Lorem ipsum
+            ```typescript
+            Observable.interval(500).pipe(
+                map(i => Math.random().toFixed(1)),
+                // Filters out emissions less than 0.8.
+                filter(v => v >= 0.8),
+            )
+            .subscribe(v => { ... });
+            ```
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `filter`
+
+            ![filter1](img/filter1.gif)
+
+            `filter(v => v >= 0.8)`
+
+            ![filter2](img/filter2.gif)
             <aside class="notes">
               Notes:
             </aside>
@@ -436,10 +523,37 @@
           <textarea data-template>
             ## `take`, `takeUntil`, `first`
 
-            Lorem ipsum
+            ```typescript
+            // Takes first 5 emissions, then unsubscribes.
+            const five = Observable.interval(1000).pipe(take(5));
+
+            five.pipe(
+                // Completes after the given observable emits once.
+                takeUntil(Observable.timer(3500)),
+            )
+            .subscribe(v => { ... });
+
+            // `first()` is a convenient shorthand for `take(1)`.
+            ```
             <aside class="notes">
               Notes:
               - important! these complete automatically and thus auto-unsubscribe
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `takeUntil`
+
+            ![takeuntil1](img/takeuntil1.gif)
+            ![takeuntil2](img/takeuntil2.gif)
+
+            `takeUntil()`
+
+            ![takeuntil3](img/takeuntil3.gif)
+            <aside class="notes">
+              Notes:
             </aside>
           </textarea>
         </section>
@@ -458,7 +572,32 @@
           <textarea data-template>
             ## `merge`
 
-            Lorem ipsum
+            ```typescript
+            // Contains a stream of characters.
+            const chars = ...;
+            Observable.interval(1000).pipe(
+                // `merge` emits for every value from either observable.
+                merge(chars),
+            )
+            .subscribe(v => { ... });
+            ```
+            <aside class="notes">
+              Notes:
+              - emits immediately for each source emission
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `merge`
+
+            ![merge1](img/merge1.gif)
+            ![merge2](img/merge2.gif)
+
+            `merge()`
+
+            ![merge3](img/merge3.gif)
             <aside class="notes">
               Notes:
             </aside>
@@ -469,7 +608,35 @@
           <textarea data-template>
             ## `concat`
 
-            Lorem ipsum
+            ```typescript
+            Observable.interval(500).pipe(
+                take(4),
+                // Emits from the first observable until it completes,
+                // then emits from the concatenated one.
+                concat(
+                    Observable.interval(1000).pipe(take(2))
+                ),
+            )
+            .subscribe(v => { ... });
+            ```
+            <aside class="notes">
+              Notes:
+              - `concat` will keep emitting from a single observable until it completes
+              - if it never completes, nothing from the 2nd observable will be emitted
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `concat`
+
+            ![concat1](img/concat1.gif)
+            ![concat2](img/concat2.gif)
+
+            `concat()`
+
+            ![concat3](img/concat3.gif)
             <aside class="notes">
               Notes:
             </aside>
