@@ -445,7 +445,7 @@
             ## `scan`
 
             ```typescript
-            // Changes in temp over time.
+            // Changes in temperature over time.
             const deltas = ...;
             const currentTemp = 40;
             deltas.pipe(
@@ -622,7 +622,8 @@
             <aside class="notes">
               Notes:
               - `concat` will keep emitting from a single observable until it completes
-              - if it never completes, nothing from the 2nd observable will be emitted
+              - this happens before the 2nd observable is subscribed to!
+              - if it never completes, the 2nd observable will never be subscribed to
             </aside>
           </textarea>
         </section>
@@ -647,7 +648,38 @@
           <textarea data-template>
             ## `forkJoin`
 
-            Lorem ipsum
+            ```typescript
+            // Waits for all observables to complete, then returns
+            // an array of their final values.
+            forkJoin(
+                this.http.get('/api'),
+                webWorkerJob,
+            )
+            .subscribe(v => { ... });
+            ```
+            <aside class="notes">
+              Notes:
+              - with `merge` and `concat`, we saw the pipeable forms
+                - but they also have "static" forms, that take multiple observables
+              - `forkJoin` just has the static form
+              - conceptually similar to Promise.all
+              - emits an array of the final values emitted from all observables
+              - all observables need to complete!
+              - not as widely composable because of this
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `forkJoin`
+
+            ![forkJoin1](img/forkjoin1.gif)
+            ![forkJoin2](img/forkjoin2.gif)
+
+            `forkJoin()`
+
+            ![forkJoin3](img/forkjoin3.gif)
             <aside class="notes">
               Notes:
             </aside>
