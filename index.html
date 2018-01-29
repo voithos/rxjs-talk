@@ -917,9 +917,22 @@
           <textarea data-template>
             ## `mergeMap`, `concatMap`, `switchMap`
 
-            Lorem ipsum
+            ```typescript
+            const inputEvents = Observable.fromEvent(textbox, 'input');
+            // This:
+            inputEvents.pipe(
+                map(e => this.html.get(`/api/input/${e.data}`)),
+                switchAll(),
+            );
+            // ...is equivalent to this:
+            inputEvents.pipe(
+                switchMap(e => this.html.get(`/api/input/${e.data}`)),
+            );
+            ```
             <aside class="notes">
               Notes:
+              - `map` + flattening is a common idiom, so specific operators exist
+              - allows data to stay as first-order observables
               - `switchMap` is usually a better default choice because it has cancellation built-in
             </aside>
           </textarea>
@@ -956,8 +969,27 @@
 
             Both an Observer and an Observable
 
+            ```typescript
+            const subject = new Subject<number>();
+            Observable.interval(1000).pipe(
+                take(3),
+                tap(v => console.log(`Emit: ${v}`)),
+            )
+            // This subscription creates one new execution of
+            // the observable.
+            .subscribe(subject);
+
+            // Even though there are multiple subscriptions on
+            // the subject, each 'Emit:' will only print once.
+            const sub1 = subject.subscribe(v => { ... });
+            const sub2 = subject.subscribe(v => { ... });
+            ```
             <aside class="notes">
               Notes:
+              - can act as a multicast point
+              - allows for more imperative manipulation of observables, but try to avoid this
+                - usually a better way to do this with operators
+              - trivia: `EventEmitter` is actually a subject
             </aside>
           </textarea>
         </section>
@@ -972,6 +1004,12 @@
             ## But actually, NOPE <!-- .element: class="fragment" style="color: #ff2c2d;" data-fragment-index="1" -->
             <aside class="notes">
               Notes:
+              - best to avoid managing a subject manually
+              - `share()` creates a subject internally and keeps track of downstream subscribers
+              - 0 -> 1 results in the inner observable getting subscribed ("connected")
+              - 1 -> 0 results in the inner observable getting unsubscribed
+              - but danger, going from 0 -> 1 again will result in a re-execution!
+                - often difficult to debug
             </aside>
           </textarea>
         </section>
@@ -984,10 +1022,21 @@
             to the source observable.
 
             ```typescript
-            Lorem ipsum
+            const intensiveObservable = ...;
+
+            // Argument indicates how many emissions to replay
+            // for new observers. When subscribers drops to 0,
+            // source observable is unsubscribed from and never
+            // re-subscribed.
+            const sharedObservable = intensiveObservable.pipe(
+                shareReplay(1),
+            );
             ```
             <aside class="notes">
               Notes:
+              - uses a `ReplaySubject` under the hood instead of `Subject`
+              - new subscribers see the replay
+              - once subscribers drop to 0, source is unsubscribed from
             </aside>
           </textarea>
         </section>
@@ -996,9 +1045,14 @@
           <textarea data-template>
             ## And more!
 
-            Great resource: https://www.learnrxjs.io/
+            Good resource: https://www.learnrxjs.io/
+
+            Keep an eye on the [rxjs-docs repo](https://github.com/ReactiveX/rxjs-docs)
             <aside class="notes">
               Notes:
+              - as is the case with almost all rxjs docs, learnrxjs needs some updates :(
+              - caveats: some pages use pipeables, while others don't; not everything is there
+              - rxjs-docs is supposed to be the future of docs
             </aside>
           </textarea>
         </section>
