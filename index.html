@@ -3,7 +3,7 @@
   <head>
     <link rel="stylesheet" href="css/reveal.css">
     <link rel="stylesheet" href="css/theme/white.css">
-    <link rel="stylesheet" href="lib/css/zenburn.css">
+    <link rel="stylesheet" href="lib/css/dracula.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/5.5.6/Rx.js"></script>
     <script src="js/presentation.js"></script>
     <style>
@@ -24,7 +24,7 @@
 
         <section data-markdown>
           <textarea data-template>
-            # The Subject was Observables
+            # Observables through space and time
 
             <small class="caption">by Zaven Muradyan</small>
             <aside class="notes">
@@ -987,13 +987,14 @@
           <textarea data-template>
             ## Sharing execution
 
-            All observables so far have been lazy, "cold"
+            All observables so far have had no multicasting
 
             Every subscription creates a separate execution
 
             In many cases, we want to share a single execution
             <aside class="notes">
               Notes:
+              - if an observable is piped through mappings, filters, etc, each execution would repeat that work
             </aside>
           </textarea>
         </section>
@@ -1133,7 +1134,7 @@
 
         <section data-markdown>
           <textarea data-template>
-            ## Using `AsyncPipe`
+            ## Using AsyncPipe
 
             ```typescript
             @Component({
@@ -1162,7 +1163,7 @@
 
         <section data-markdown>
           <textarea data-template>
-            ## Using `AsyncPipe`
+            ## Multiple AsyncPipes
 
             ```typescript
             @Component({
@@ -1201,9 +1202,33 @@
 
             If an explicit `.subscribe()` is needed
 
-            Lorem ipsum
+            ```typescript
+            @Component({ ... })
+            export class UniverseComponent implements OnDestroy {
+              private onDestroy = new Subject<void>();
+              ngOnDestroy() {
+                // Attach to the component's lifecycle.
+                this.onDestroy.next();
+              }
+              createGalaxy(): void {
+                this.http.post('/api/galaxy', this.data).pipe(
+                    switchMap(...),
+                    filter(...),
+                    // Ensure that this subscription is cleaned
+                    // up on component destruction.
+                    takeUntil(this.onDestroy),
+                )
+                .subscribe();
+              }
+            }
+            ```
             <aside class="notes">
               Notes:
+              - if `async` isn't appropriate, or an explicit .subscribe() is needed for some other reason...
+              - can use an `onDestroy` Subject with `takeUntil` to ensure that subscriptions are cleaned up
+              - orphaned subscriptions can cause memory leaks
+              - also good to choose the minimize observable lifetime in other ways
+                - `first()`, `take(n)`, etc
             </aside>
           </textarea>
         </section>
