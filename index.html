@@ -688,6 +688,41 @@
 
         <section data-markdown>
           <textarea data-template>
+            ## `startWith`
+
+            ```typescript
+            // API call might be somewhat slow...
+            this.http.get('/api/processed_tons').pipe(
+                // So we can start the observable with an initial value.
+                startWith(0),
+            )
+            .subscribe(v => { ... });
+            ```
+            <aside class="notes">
+              Notes:
+              - can be used to provide an initial value to `scan()`
+              - generally useful for composing with any other operators that wait on an initial emit
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `startWith`
+
+            ![startwith1](img/startwith1.gif)
+
+            `startWith(0)`
+
+            ![startwith2](img/startwith2.gif)
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
             ## `combineLatest`
 
             ```typescript
@@ -1071,11 +1106,27 @@
           <textarea data-template>
             ## Passing values to the template
 
-            Lorem ipsum
+            ```typescript
+            @Component({
+              template: `<div>{{curvature}}<div>`,
+            })
+            export class UniverseComponent implements OnInit {
+              curvature: number;
+              constructor(private service: SpaceTimeService) {}
+              ngOnInit() {
+                this.service.calcCurvature().subscribe(v => {
+                  this.curvature = v;
+                });
+              }
+            }
+            ```
 
             ## But actually, NOPE <!-- .element: class="fragment" style="color: #ff2c2d;" data-fragment-index="1" -->
             <aside class="notes">
               Notes:
+              - performing an async calculation and setting the value to the cmp
+              - NOPE: this should generally be avoided, since now the cmp has to manage a subscription
+              - explicit `.subsribe()` calls should be avoided (code smell)
             </aside>
           </textarea>
         </section>
@@ -1084,9 +1135,62 @@
           <textarea data-template>
             ## Using `AsyncPipe`
 
-            Lorem ipsum
+            ```typescript
+            @Component({
+              template: `<div>{{curvature | async}}<div>`,
+            })
+            export class UniverseComponent implements OnInit {
+              curvature: Observable<number>;
+              constructor(private service: SpaceTimeService) {}
+              ngOnInit() {
+                this.curvature = this.service.calcCurvature();
+              }
+            }
+            ```
             <aside class="notes">
               Notes:
+              - async subscribes to an observable and returns the latest value it emits
+              - automatically unsubscribes via Angular's component lifecycle
+              - still an observable, so can be easily manipulated
+              - caveats:
+                - returns `null` until the observable actually emits, so blindly accessing properties on the result is dangerous
+                - if it makes sense, that could be worked around via `startWith()`
+                - each use of `async` creates a separate subscription! multiple executions if not multicasted
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## Using `AsyncPipe`
+
+            ```typescript
+            @Component({
+              template: `
+                <div>
+                  Universe curvature is {{curvature | async}}!
+                  {{curvature | async}}!!!1
+                <div>`,
+            })
+            export class UniverseComponent implements OnInit {
+              ...
+              ngOnInit() {
+                this.curvature = this.service.calcCurvature().pipe(
+                    // Ensures that source observable is only
+                    // executed once.
+                    shareReplay(1),
+                );
+              }
+            }
+            ```
+            <aside class="notes">
+              Notes:
+              - async subscribes to an observable and returns the latest value it emits
+              - automatically unsubscribes via Angular's component lifecycle
+              - still an observable, so can be easily manipulated
+              - caveats:
+                - returns `null` until the observable actually emits, so blindly accessing properties on the result is dangerous
+                - each use of `async` creates a separate subscription! multiple executions if not multicasted
             </aside>
           </textarea>
         </section>
