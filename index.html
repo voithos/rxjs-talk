@@ -782,6 +782,7 @@
               Notes:
               - observables are streams of values
               - naturally, the values can be other observables
+              - observables of observables are "higher order observables"
             </aside>
           </textarea>
         </section>
@@ -790,9 +791,31 @@
           <textarea data-template>
             ## Mapping to observables
 
-            Lorem ipsum
+            ```typescript
+            // Async stream of data IDs.
+            const ids = ...;
+            const data: Observable<Observable<Data>> = ids.pipe(
+                map(id => this.http.get<Data>(`/api/${id}`)),
+            );
+            // What we really want is a flat `Observable<Data>`.
+            ```
             <aside class="notes">
               Notes:
+              - in a real application, would try to minimize HTTP requests
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## Mapping to observables
+
+            ![higherorder](img/higherorder.gif)
+            <aside class="notes">
+              Notes:
+              - hard to work with
+              - definitely don't want to just .subscribe() inside the map()!
+                - anti pattern; that would basically be callback hell
             </aside>
           </textarea>
         </section>
@@ -801,23 +824,91 @@
           <textarea data-template>
             ## Flattening higher-order observables
 
-            - `mergeAll()`
-            - `concatAll()`
+            - `mergeAll()` - merges all inner observables
+            - `concatAll()` - concats all inner observables
+            - `switchAll()` - on each emit, unsubscribes from previous observable and switches to the new one
 
-            Lorem ipsum
             <aside class="notes">
               Notes:
+              - we want to flatten the observables somehow
+              - good news, we can use some of the same operators we already saw
+              - `switchAll()` is new; will talk about it in a bit
             </aside>
           </textarea>
         </section>
 
         <section data-markdown>
           <textarea data-template>
-            ## `switchAll`
+            ## Flattening higher-order observables
 
-            Lorem ipsum
+            ```typescript
+            // Observable of buttons whose click events
+            // we're interested in.
+            const buttons = ...;
+            const clicks = buttons.pipe(
+                map(btn => Observable.fromEvent(btn, 'click')),
+            );
+
+            // These all do related, but different, things.
+            const mergedClicks = clicks.pipe(mergeAll());
+            const concatenatedClicks = clicks.pipe(concatAll());
+            const switchedClicks = clicks.pipe(switchAll());
+            ```
             <aside class="notes">
               Notes:
+              - will use an example similar to the last one
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `mergeAll()`
+
+            ![mergeall1](img/higherorder2.gif)
+
+            `mergeAll()`
+
+            ![mergeall2](img/mergeall2.gif)
+            <aside class="notes">
+              Notes:
+              - subscribes to each inner observable and merges results
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `concatAll()`
+
+            ![concatall1](img/higherorder2.gif)
+
+            `concatAll()`
+
+            ![concatall2](img/concatall2.gif)
+            <aside class="notes">
+              Notes:
+              - subscribes to each inner observable one the previous one completes
+              - in this case, the 2nd one never completes, so we see no emits from the 3rd
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `switchAll()`
+
+            ![switchall1](img/higherorder2.gif)
+
+            `switchAll()`
+
+            ![switchall2](img/switchall2.gif)
+            <aside class="notes">
+              Notes:
+              - switch unsubscribes from previous inner observables whenever a new one is available
+              - it also doesn't get hung if an observable does not complete
+              - picks the most recent emission, in a sense
+              - often the best "default" flattening method
             </aside>
           </textarea>
         </section>
