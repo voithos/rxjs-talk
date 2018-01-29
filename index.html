@@ -560,6 +560,58 @@
 
         <section data-markdown>
           <textarea data-template>
+            ## Error handling operators
+
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `catch`, `retry`
+
+            ```typescript
+            this.http.get('/flaky_api').pipe(
+                // Retry once if request fails.
+                retry(1),
+
+                // Just use a default value if it fails completely.
+                catch(err => Observable.of({data: 'flake'})),
+            )
+            .subscribe(v => { ... });
+            ```
+            <aside class="notes">
+              Notes:
+              - retry will create a new execution of the observable if it fails
+                - in this case, that means a new HTTP request
+              - note that `catch()` is actually returning an observable
+                - later will talk about higher-order observables
+              - returned observable replaces the observable that errored
+                - can emit more than one value
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `catch`
+
+            ![catch1](img/catch1.gif)
+            ![catch2](img/catch2.gif)
+
+            `catch()`
+
+            ![catch3](img/catch3.gif)
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
             ## Combination operators
 
             <aside class="notes">
@@ -652,7 +704,7 @@
             // Waits for all observables to complete, then returns
             // an array of their final values.
             forkJoin(
-                this.http.get('/api'),
+                this.http.get('/api/galaxies'),
                 webWorkerJob,
             )
             .subscribe(v => { ... });
