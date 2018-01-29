@@ -1237,9 +1237,119 @@
           <textarea data-template>
             ## Managing state-over-time
 
-            Lorem ipsum
+            ```typescript
+            @Component({ ... })
+            export class UniverseComponent {
+              // How can we manage this state over time, when it can
+              // potentially be loaded and mutated asynchronously?
+              galaxies: Galaxy[];
+            }
+            ```
             <aside class="notes">
               Notes:
+              - caveat: this pattern hasn't been vetted "in the wild"
+              - wouldn't want to use explicit .subscribe()s
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## Managing state-over-time
+
+            ```typescript
+            @Component({ ... })
+            export class UniverseComponent implements OnInit {
+              // Use in the template with `async`.
+              galaxies: Observable<Galaxy[]>;
+              deletedGalaxies = new Subject<Galaxy[]>();
+              ngOnInit() {
+                // `applyStateTransforms` applies the given transforms
+                // to the observable of starting data, over time.
+                this.galaxies = applyStateTransforms(
+                    this.route.data.galaxies,
+                    // `stateTransforms` generates the transforms based
+                    // on an observable of events and a reducer.
+                    stateTransforms(this.deletedGalaxies, deleteReducer),
+                );
+              }
+              deleteGalaxies(galaxies: Galaxy[]) {
+                this.universeService.deleteGalaxies(galaxies)
+                    .subscribe(this.deletedGalaxies);
+              }
+            }
+            ```
+            <aside class="notes">
+              Notes:
+              - `galaxies` can be used in the template directly, with async
+              - the transforms are applied over time to the initial state
+              - when calling `deleteGalaxies` on the service, could also do a `takeUntil(this.onDestroy)`
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## State transform reducer
+
+            ```typescript
+            function deleteReducer(
+                galaxies: Galaxy[], deletedGalaxies: Galaxy[]) {
+              const deletedIds = new Set(deletedGalaxies.map(g => g.id));
+              return galaxies.filter(g => !deletedIds.has(g.id));
+            }
+            ```
+            <aside class="notes">
+              Notes:
+              - reducer operates on simple arrays, is quite simple
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `stateTransforms`
+
+            ```typescript
+            function stateTransforms<S, A>(
+                actions: Observable<A>,
+                reducer: (state: S, action: A) => S
+                ): Observable<(state: S) => S> {
+              return actions.pipe(
+                  map((action: A) => (state: S) =>
+                      reducer(state, action)),
+              );
+            }
+            ```
+            <aside class="notes">
+              Notes:
+              - generates an observable of "state transformation functions" - S => S
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `applyStateTransforms`
+
+            ```typescript
+            function applyStateTransforms<S>(
+                state: Observable<S>,
+                ...transforms: Array<Observable<(state: S) => S>>
+                ): Observable<S> {
+              const mergedTransforms = merge(...transforms);
+              return state.pipe(
+                switchMap(startState => transforms.pipe(
+                  scan((state, trans) => trans(state), startState),
+                  startWith(startState),
+                )),
+              );
+            }
+            ```
+            <aside class="notes">
+              Notes:
+              - merges all the transforms (so there can be many)
+              - switchMap's the state observable, meaning it will take precedence
             </aside>
           </textarea>
         </section>
