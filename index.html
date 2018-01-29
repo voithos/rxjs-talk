@@ -690,7 +690,40 @@
           <textarea data-template>
             ## `combineLatest`
 
-            Lorem ipsum
+            ```typescript
+            // Observables of keyboard presses and
+            // number pad presses.
+            const keyPresses = ...;
+            const numpadPresses = ...;
+
+            // Emits an array of the latest values from each
+            // observable when any observable emits. Only starts
+            // after each observable emits at least once.
+            combineLatest(
+                keyPresses,
+                numpadPresses,
+            )
+            .subscribe(v => { ... });
+            ```
+            <aside class="notes">
+              Notes:
+              - `combineLatest` only emits after each individual observable has
+                emitted at least once
+              - similar to a continuous `forkJoin`
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `combineLatest`
+
+            ![combinelatest1](img/combinelatest1.gif)
+            ![combinelatest2](img/combinelatest2.gif)
+
+            `combineLatest()`
+
+            ![combinelatest3](img/combinelatest3.gif)
             <aside class="notes">
               Notes:
             </aside>
@@ -701,7 +734,40 @@
           <textarea data-template>
             ## `withLatestFrom`
 
-            Lorem ipsum
+            ```typescript
+            // Observables of keyboard presses and
+            // number pad presses.
+            const keyPresses = ...;
+            const numpadPresses = ...;
+
+            keyPresses.pipe(
+                // Includes the latest value from `numpadPresses`.
+                // Will only emit if `numpadPresses` has emitted
+                // at least once.
+                withLatestFrom(numpadPresses),
+            )
+            .subscribe(v => { ... });
+            ```
+            <aside class="notes">
+              Notes:
+              - very similar example code as `combineLatest`
+              - also includes the latest value from another observable
+                - but does not emit when that other observable emits
+              - if second observable hasn't emitted yet, `withLatestFrom` won't emit!
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `withLatestFrom`
+
+            ![withlatestfrom1](img/combinelatest1.gif)
+            ![withlatestfrom2](img/combinelatest2.gif)
+
+            `withLatestFrom()`
+
+            ![withlatestfrom3](img/withlatestfrom3.gif)
             <aside class="notes">
               Notes:
             </aside>
