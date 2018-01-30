@@ -91,7 +91,7 @@
             // Multiple values, asynchronous.
             // Adds both space and time dimensions.
             const observable = Observable.interval(1000);
-            observable.subscribe(() => { ... });
+            observable.subscribe(v => { ... });
             ```
 
             <aside class="notes">
@@ -179,13 +179,13 @@
             ## Anatomy of an observable
 
             <pre><code class="typescript" data-trim data-noescape>
-            <span class="fragment highlight-current-red" data-fragment-index="4">const subscription =</span>
+            <span class="fragment highlight-current-red" data-fragment-index="4">const subscription</span> =
                 <span class="fragment highlight-current-red" data-fragment-index="1">Observable.interval(1000)</span>
                 <span class="fragment highlight-current-red" data-fragment-index="2">.pipe(
-                    map(x => Math.random() * x)
-                    filter(x => x < 1)
+                    map(x => Math.random() * x),
+                    filter(x => x < 1),
                 )</span>
-                <span class="fragment highlight-current-red" data-fragment-index="3">.subscribe(x => console.log(`Logged ${x}`));</span>
+                .subscribe(<span class="fragment highlight-current-red" data-fragment-index="3">x => console.log(`Logged ${x}`)</span>);
             </code></pre>
 
             <div style="position: relative">
@@ -344,7 +344,10 @@
                 // without altering the underlying observable.
                 tap(v => logToServer(v)),
             )
-            .subscribe(v => { ... });
+            .subscribe(v => {
+              // `v` is unaffected by `tap`.
+              ...
+            });
             ```
             <aside class="notes">
               Notes:
@@ -412,11 +415,10 @@
             ## `map`
 
             ```typescript
-            Observable.interval(750).pipe(
+            const mapped = Observable.interval(750).pipe(
                 // Transforms each value to another.
                 map(i => i * 10),
-            )
-            .subscribe(v => { ... });
+            );
             ```
             <aside class="notes">
               Notes:
@@ -447,12 +449,11 @@
             ```typescript
             // Changes in temperature over time.
             const deltas = ...;
-            const currentTemp = 40;
-            deltas.pipe(
+            const initialTemp = 40;
+            const reduced = deltas.pipe(
                 // Reduces over time.
-                scan((acc, delta) => acc + delta, currentTemp),
-            )
-            .subscribe(temp => { ... });
+                scan((acc, delta) => acc + delta, initialTemp),
+            );
             ```
             <aside class="notes">
               Notes:
@@ -467,7 +468,7 @@
 
             ![scan1](img/scan1.gif)
 
-            `scan((acc, delta) => acc + delta)`
+            `scan((acc, delta) => acc + delta, initialTemp)`
 
             ![scan2](img/scan2.gif)
             <aside class="notes">
@@ -491,12 +492,11 @@
             ## `filter`
 
             ```typescript
-            Observable.interval(500).pipe(
+            const filtered = Observable.interval(500).pipe(
                 map(i => Math.random().toFixed(1)),
                 // Filters out emissions less than 0.8.
                 filter(v => v >= 0.8),
-            )
-            .subscribe(v => { ... });
+            );
             ```
             <aside class="notes">
               Notes:
@@ -573,14 +573,13 @@
             ## `catch`, `retry`
 
             ```typescript
-            this.http.get('/flaky_api').pipe(
+            const handled = this.http.get('/flaky_api').pipe(
                 // Retry once if request fails.
                 retry(1),
 
                 // Just use a default value if it fails completely.
                 catch(err => Observable.of({data: 'flake'})),
-            )
-            .subscribe(v => { ... });
+            );
             ```
             <aside class="notes">
               Notes:
@@ -627,11 +626,10 @@
             ```typescript
             // Contains a stream of characters.
             const chars = ...;
-            Observable.interval(1000).pipe(
+            const merged = Observable.interval(1000).pipe(
                 // `merge` emits for every value from either observable.
                 merge(chars),
-            )
-            .subscribe(v => { ... });
+            );
             ```
             <aside class="notes">
               Notes:
@@ -661,15 +659,14 @@
             ## `concat`
 
             ```typescript
-            Observable.interval(500).pipe(
+            const concatenated = Observable.interval(500).pipe(
                 take(4),
                 // Emits from the first observable until it completes,
                 // then emits from the concatenated one.
                 concat(
                     Observable.interval(1000).pipe(take(2))
                 ),
-            )
-            .subscribe(v => { ... });
+            );
             ```
             <aside class="notes">
               Notes:
@@ -703,11 +700,10 @@
             ```typescript
             // Waits for all observables to complete, then returns
             // an array of their final values.
-            forkJoin(
+            const joined = forkJoin(
                 this.http.get('/api/galaxies'),
                 webWorkerJob,
-            )
-            .subscribe(v => { ... });
+            );
             ```
             <aside class="notes">
               Notes:
@@ -744,11 +740,10 @@
 
             ```typescript
             // API call might be somewhat slow...
-            this.http.get('/api/processed_tons').pipe(
+            const prefixed = this.http.get('/api/processed').pipe(
                 // So we can start the observable with an initial value.
                 startWith(0),
-            )
-            .subscribe(v => { ... });
+            );
             ```
             <aside class="notes">
               Notes:
@@ -786,11 +781,10 @@
             // Emits an array of the latest values from each
             // observable when any observable emits. Only starts
             // after each observable emits at least once.
-            combineLatest(
+            const combined = combineLatest(
                 keyPresses,
                 numpadPresses,
-            )
-            .subscribe(v => { ... });
+            );
             ```
             <aside class="notes">
               Notes:
@@ -827,13 +821,12 @@
             const keyPresses = ...;
             const numpadPresses = ...;
 
-            keyPresses.pipe(
+            const combined = keyPresses.pipe(
                 // Includes the latest value from `numpadPresses`.
                 // Will only emit if `numpadPresses` has emitted
                 // at least once.
                 withLatestFrom(numpadPresses),
-            )
-            .subscribe(v => { ... });
+            );
             ```
             <aside class="notes">
               Notes:
