@@ -1293,49 +1293,17 @@
             @Component({ ... })
             export class UniverseComponent {
               // How can we manage this state over time, when it can
-              // potentially be loaded and mutated asynchronously?
+              // potentially be loaded and mutated asynchronously, in
+              // several different ways?
               galaxies: Galaxy[];
             }
             ```
             <aside class="notes">
               Notes:
               - caveat: this pattern hasn't been vetted "in the wild"
-              - wouldn't want to use explicit .subscribe()s
-            </aside>
-          </textarea>
-        </section>
-
-        <section data-markdown>
-          <textarea data-template>
-            ## Managing state-over-time
-
-            ```typescript
-            @Component({ ... })
-            export class UniverseComponent implements OnInit {
-              // Use in the template with `async`.
-              galaxies: Observable<Galaxy[]>;
-              deletedGalaxies = new Subject<Galaxy[]>();
-              ngOnInit() {
-                // `applyStateTransforms` applies the given transforms
-                // to the observable of starting data, over time.
-                this.galaxies = applyStateTransforms(
-                    this.route.data.galaxies,
-                    // `stateTransforms` generates the transforms based
-                    // on an observable of events and a reducer.
-                    stateTransforms(this.deletedGalaxies, deleteReducer),
-                );
-              }
-              deleteGalaxies(galaxies: Galaxy[]) {
-                this.universeService.deleteGalaxies(galaxies)
-                    .subscribe(this.deletedGalaxies);
-              }
-            }
-            ```
-            <aside class="notes">
-              Notes:
-              - `galaxies` can be used in the template directly, with async
-              - the transforms are applied over time to the initial state
-              - when calling `deleteGalaxies` on the service, could also do a `takeUntil(this.onDestroy)`
+              - motivation, avoid .subscribe() soup
+              - if there was a single action (say, delete), then it'd be straightforward to compose
+              - but what if there are multiple action types? delete, add, refresh, etc?
             </aside>
           </textarea>
         </section>
@@ -1345,15 +1313,55 @@
             ## State transform reducer
 
             ```typescript
+            // Transitions the state based on an action -
+            // in this case, deletion.
             function deleteReducer(
-                galaxies: Galaxy[], deletedGalaxies: Galaxy[]) {
-              const deletedIds = new Set(deletedGalaxies.map(g => g.id));
-              return galaxies.filter(g => !deletedIds.has(g.id));
+                galaxies: Galaxy[], deletedGalaxy: Galaxy) {
+              return galaxies.filter(g => g.id !== deletedGalaxy.id);
             }
             ```
             <aside class="notes">
               Notes:
-              - reducer operates on simple arrays, is quite simple
+              - think of a simple state transition that we're interested in
+                - in this case, deleting a galaxy
+              - reducer is quite simple; operates on a normal array
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## Multiple transforms
+
+            ```typescript
+            @Component({ ... })
+            export class UniverseComponent implements OnInit {
+              // Use in the template with `async`.
+              galaxies: Observable<Galaxy[]>;
+              deletedGalaxies = new Subject<Galaxy>();
+              ngOnInit() {
+                // `applyStateTransforms` applies the given transforms
+                // to the observable of starting data, over time.
+                this.galaxies = applyStateTransforms(
+                    this.route.data.galaxies,
+                    // `stateTransforms` generates the transforms based
+                    // on an observable of events and a reducer.
+                    stateTransforms(this.deletedGalaxies, deleteReducer),
+                    ..., // More transforms can be added here.
+                );
+              }
+              deleteGalaxy(galaxy: Galaxy) {
+                this.universeService.deleteGalaxy(galaxy)
+                    .subscribe(this.deletedGalaxies);
+              }
+            }
+            ```
+            <aside class="notes">
+              Notes:
+              - `galaxies` can be used in the template directly, with async
+              - initial state loaded via a Route Resolver
+              - the transforms are applied over time to the initial state
+              - when calling `deleteGalaxies` on the service, could also do a `takeUntil(this.onDestroy)`
             </aside>
           </textarea>
         </section>
@@ -1363,6 +1371,10 @@
             ## `stateTransforms`
 
             ```typescript
+            // Produces an observable of state transformation functions,
+            // given an observable of actions and a reducer.
+            // In the example, `S` was `galaxies: Galaxy[]` and
+            // `A` was `deletedGalaxy: Galaxy`.
             function stateTransforms<S, A>(
                 actions: Observable<A>,
                 reducer: (state: S, action: A) => S
@@ -1385,6 +1397,8 @@
             ## `applyStateTransforms`
 
             ```typescript
+            // Composes outputs of `stateTransforms()` with
+            // an observable of initial state.
             function applyStateTransforms<S>(
                 state: Observable<S>,
                 ...transforms: Array<Observable<(state: S) => S>>
@@ -1402,6 +1416,10 @@
               Notes:
               - merges all the transforms (so there can be many)
               - switchMap's the state observable, meaning it will take precedence
+              - can almost think of the `scan()` as a loop
+              - important for there to be a single scan()!
+                - if this took just a single transform observable, and composed with itself, scan internal state could get out of sync
+                - only the downstream scan would see updates from the upstream on, so potential of mismatch
             </aside>
           </textarea>
         </section>
