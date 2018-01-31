@@ -12,6 +12,9 @@
         right: 0px;
         position: absolute;
       }
+      .caption-below {
+        bottom: -2em;
+      }
       iframe {
         width: 100%;
       }
@@ -27,6 +30,18 @@
             # Observables through space and time
 
             <small class="caption">by Zaven Muradyan</small>
+
+            <!-- BEGIN-EXTENDED -->
+            <small class="caption caption-below">
+              <a href="/?version=abridged">Abridged version</a>
+            </small>
+            <!-- END-EXTENDED -->
+            <!-- BEGIN-ABRIDGED -->
+            <small class="caption caption-below">
+              <a href="/">Extended version</a>
+            </small>
+            <!-- END-ABRIDGED -->
+
             <aside class="notes">
               Notes:
             </aside>
@@ -308,7 +323,7 @@
           </textarea>
         </section>
 
-        <section data-markdown>
+        <section data-markdown data-extended>
           <textarea data-template>
             ## `empty`, `throw`, `never`
 
@@ -1435,19 +1450,55 @@
     <script src="lib/js/head.min.js"></script>
     <script src="js/reveal.js"></script>
     <script>
-      Reveal.initialize({
-        history: true,
-        dependencies: [
-          // Interpret Markdown in <section> elements
-          { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-          { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      document.addEventListener('DOMContentLoaded', function() {
+        if (window.location.href.indexOf('version=abridged') !== -1) {
+          // We're in the "abridged" mode, so remove extended-specific stuff.
 
-          // Syntax highlight for <code> elements
-          { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+          // Remove extended sections in templates.
+          [].forEach.call(document.querySelectorAll('[data-template]'), function(el) {
+            var start = el.innerHTML.indexOf('BEGIN-EXTENDED');
+            var end = el.innerHTML.indexOf('END-EXTENDED');
+            if (start !== -1) {
+              el.innerHTML = el.innerHTML.substring(0, start) + el.innerHTML.substring(end);
+            }
+          });
 
-          // Speaker notes
-          { src: 'plugin/notes/notes.js', async: true }
-        ]
+          // Remove extended content.
+          [].forEach.call(document.querySelectorAll('[data-extended]'), function(el) {
+            el.remove();
+          });
+        } else {
+          // We're in the "extended" mode, so remove abridged-specific stuff.
+
+          // Remove abridged sections in templates.
+          [].forEach.call(document.querySelectorAll('[data-template]'), function(el) {
+            var start = el.innerHTML.indexOf('BEGIN-ABRIDGED');
+            var end = el.innerHTML.indexOf('END-ABRIDGED');
+            if (start !== -1) {
+              el.innerHTML = el.innerHTML.substring(0, start) + el.innerHTML.substring(end);
+            }
+          });
+
+          // Remove abridged content.
+          [].forEach.call(document.querySelectorAll('[data-abridged]'), function(el) {
+            el.remove();
+          });
+        }
+
+        Reveal.initialize({
+          history: true,
+          dependencies: [
+            // Interpret Markdown in <section> elements
+            { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+            { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+
+            // Syntax highlight for <code> elements
+            { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+
+            // Speaker notes
+            { src: 'plugin/notes/notes.js', async: true }
+          ]
+        });
       });
     </script>
   </body>
