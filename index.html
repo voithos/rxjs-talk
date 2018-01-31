@@ -13,7 +13,7 @@
         position: absolute;
       }
       .caption-below {
-        bottom: -2em;
+        bottom: -3em;
       }
       iframe {
         width: 100%;
@@ -33,12 +33,12 @@
 
             <!-- BEGIN-EXTENDED -->
             <small class="caption caption-below">
-              <a href="/?version=abridged">Abridged version</a>
+              <a href="/?version=abridged">Switch to abridged version</a>
             </small>
             <!-- END-EXTENDED -->
             <!-- BEGIN-ABRIDGED -->
             <small class="caption caption-below">
-              <a href="/">Extended version</a>
+              <a href="/">Switch to extended version</a>
             </small>
             <!-- END-ABRIDGED -->
 
@@ -87,7 +87,7 @@
           </textarea>
         </section>
 
-        <section data-markdown>
+        <section data-markdown data-extended>
           <textarea data-template>
             ## Space and time
 
@@ -178,8 +178,9 @@
           <textarea data-template>
             ## RxJS
 
-            RxJS is a library that implements observables, with a goal of
-            modeling/following the [proposed spec](https://github.com/tc39/proposal-observable).
+            Angular uses RxJS, a library that implements observables, with a
+            goal of modeling/following the [proposed
+            spec](https://github.com/tc39/proposal-observable).
 
             <aside class="notes">
               Notes:
@@ -252,6 +253,24 @@
 
         <section data-markdown>
           <textarea data-template>
+            # Operators
+
+            There are a lot
+
+            <!-- BEGIN-EXTENDED -->
+            <small>Hold on to your butts</small>
+            <!-- END-EXTENDED -->
+
+            <aside class="notes">
+              Notes:
+              - rationale: operators are the basic primitives that we can use to manipulate, split, recombine observables
+              - will attempt to build-up from simple to complex
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
             ## Marble diagrams
 
             ![marble1](img/marble1.png)
@@ -264,22 +283,10 @@
               - emissions
               - | is completion
               - X is error
-              - none of the operations are dependent on one another, and all are optional
+              - all are optional
                 - don't have to emit before completing
                 - might never complete
                 - etc
-            </aside>
-          </textarea>
-        </section>
-
-        <section data-markdown>
-          <textarea data-template>
-            # Operators
-
-            There are a lot
-            <aside class="notes">
-              Notes:
-              - will attempt to build-up from simple to complex
             </aside>
           </textarea>
         </section>
@@ -319,6 +326,7 @@
               - synchronous upon subscription
               - `interval` outputs the index
               - `from` can be used for promises, arrays, etc
+              - generally useful when converting non-observables into the observable space
             </aside>
           </textarea>
         </section>
@@ -338,7 +346,7 @@
           </textarea>
         </section>
 
-        <section data-markdown>
+        <section data-markdown data-extended>
           <textarea data-template>
             ## Utility operators
 
@@ -348,7 +356,7 @@
           </textarea>
         </section>
 
-        <section data-markdown>
+        <section data-markdown data-extended>
           <textarea data-template>
             ## `tap`
 
@@ -373,7 +381,7 @@
           </textarea>
         </section>
 
-        <section data-markdown>
+        <section data-markdown data-extended>
           <textarea data-template>
             ## `delay`, `timeout`
 
@@ -396,7 +404,7 @@
           </textarea>
         </section>
 
-        <section data-markdown>
+        <section data-markdown data-extended>
           <textarea data-template>
             ## `delay`, `timeout`
 
@@ -437,7 +445,8 @@
             ```
             <aside class="notes">
               Notes:
-              - also useful for picking properties off objects
+              - useful for transforming types
+                - plucking a single property off an object
             </aside>
           </textarea>
         </section>
@@ -473,6 +482,7 @@
             <aside class="notes">
               Notes:
               - reduce-over-time, or "online" reduce
+              - useful when we need to retain "reduced" information about previous emissions
             </aside>
           </textarea>
         </section>
@@ -515,6 +525,8 @@
             ```
             <aside class="notes">
               Notes:
+              - useful when needing to drop values we don't care about
+                - drop undefined/null
             </aside>
           </textarea>
         </section>
@@ -553,6 +565,8 @@
             <aside class="notes">
               Notes:
               - important! these complete automatically and thus auto-unsubscribe
+              - starting to see multiple observables interoperating
+              - useful for cleaning up running observables
             </aside>
           </textarea>
         </section>
@@ -573,7 +587,7 @@
           </textarea>
         </section>
 
-        <section data-markdown>
+        <section data-markdown data-extended>
           <textarea data-template>
             ## Error handling operators
 
@@ -583,7 +597,7 @@
           </textarea>
         </section>
 
-        <section data-markdown>
+        <section data-markdown data-extended>
           <textarea data-template>
             ## `catch`, `retry`
 
@@ -608,7 +622,7 @@
           </textarea>
         </section>
 
-        <section data-markdown>
+        <section data-markdown data-extended>
           <textarea data-template>
             ## `catch`
 
@@ -649,6 +663,8 @@
             <aside class="notes">
               Notes:
               - emits immediately for each source emission
+              - both are active concurrently
+              - useful for parallelizing multiple observables/executions
             </aside>
           </textarea>
         </section>
@@ -688,6 +704,7 @@
               - `concat` will keep emitting from a single observable until it completes
               - this happens before the 2nd observable is subscribed to!
               - if it never completes, the 2nd observable will never be subscribed to
+              - useful for serializing multiple executions
             </aside>
           </textarea>
         </section>
@@ -708,7 +725,7 @@
           </textarea>
         </section>
 
-        <section data-markdown>
+        <section data-markdown data-extended>
           <textarea data-template>
             ## `forkJoin`
 
@@ -733,7 +750,7 @@
           </textarea>
         </section>
 
-        <section data-markdown>
+        <section data-markdown data-extended>
           <textarea data-template>
             ## `forkJoin`
 
@@ -783,7 +800,7 @@
           </textarea>
         </section>
 
-        <section data-markdown>
+        <section data-markdown data-extended>
           <textarea data-template>
             ## `combineLatest`
 
@@ -810,7 +827,7 @@
           </textarea>
         </section>
 
-        <section data-markdown>
+        <section data-markdown data-extended>
           <textarea data-template>
             ## `combineLatest`
 
@@ -826,7 +843,7 @@
           </textarea>
         </section>
 
-        <section data-markdown>
+        <section data-markdown data-extended>
           <textarea data-template>
             ## `withLatestFrom`
 
@@ -853,7 +870,7 @@
           </textarea>
         </section>
 
-        <section data-markdown>
+        <section data-markdown data-extended>
           <textarea data-template>
             ## `withLatestFrom`
 
@@ -889,7 +906,7 @@
             ```typescript
             // Async stream of data IDs.
             const ids = ...;
-            const data: Observable<Observable<Data>> = ids.pipe(
+            const requests: Observable<Observable<Data>> = ids.pipe(
                 map(id => this.http.get<Data>(`/api/${id}`)),
             );
             // What we really want is a flat `Observable<Data>`.
@@ -915,7 +932,7 @@
           </textarea>
         </section>
 
-        <section data-markdown>
+        <section data-markdown data-extended>
           <textarea data-template>
             ## Flattening higher-order observables
 
@@ -937,21 +954,21 @@
             ## Flattening higher-order observables
 
             ```typescript
-            // Observable of buttons whose click events
-            // we're interested in.
-            const buttons = ...;
-            const clicks = buttons.pipe(
-                map(btn => Observable.fromEvent(btn, 'click')),
+            const ids = ...;
+            const requests = ids.pipe(
+                map(id => this.http.get<Data>(`/api/${id}`, {
+                    reportProgress: true
+                })),
             );
 
             // These all do related, but different, things.
-            const mergedClicks = clicks.pipe(mergeAll());
-            const concatenatedClicks = clicks.pipe(concatAll());
-            const switchedClicks = clicks.pipe(switchAll());
+            const merged = requests.pipe(mergeAll());
+            const concatenated = requests.pipe(concatAll());
+            const switched = requests.pipe(switchAll());
             ```
             <aside class="notes">
               Notes:
-              - will use an example similar to the last one
+              - one detail: using reportProgress, so we'll see progress events
             </aside>
           </textarea>
         </section>
@@ -1013,15 +1030,15 @@
             ## `mergeMap`, `concatMap`, `switchMap`
 
             ```typescript
-            const inputEvents = Observable.fromEvent(textbox, 'input');
+            const ids = ...;
             // This:
-            inputEvents.pipe(
-                map(e => this.html.get(`/api/input/${e.data}`)),
+            ids.pipe(
+                map(id => this.http.get<Data>(`/api/${id}`)),
                 switchAll(),
             );
             // ...is equivalent to this:
-            inputEvents.pipe(
-                switchMap(e => this.html.get(`/api/input/${e.data}`)),
+            ids.pipe(
+                switchMap(id => this.http.get<Data>(`/api/${id}`)),
             );
             ```
             <aside class="notes">
@@ -1033,7 +1050,7 @@
           </textarea>
         </section>
 
-        <section data-markdown>
+        <section data-markdown data-extended>
           <textarea data-template>
             ## Multicasting operators
 
@@ -1043,7 +1060,7 @@
           </textarea>
         </section>
 
-        <section data-markdown>
+        <section data-markdown data-extended>
           <textarea data-template>
             ## Sharing execution
 
@@ -1059,6 +1076,16 @@
           </textarea>
         </section>
 
+        <section data-markdown data-abridged>
+          <textarea data-template>
+            ## Subjects
+
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
         <section data-markdown>
           <textarea data-template>
             ## `Subject`
@@ -1069,7 +1096,11 @@
             const subject = new Subject<number>();
             Observable.interval(1000).pipe(
                 take(3),
-                tap(v => console.log(`Emit: ${v}`)),
+                map(v => {
+                  // Sneaky side effect.
+                  console.log(`Emit: ${v}`);
+                  return v;
+                }),
             )
             // This subscription creates one new execution of
             // the observable.
@@ -1082,15 +1113,17 @@
             ```
             <aside class="notes">
               Notes:
-              - can act as a multicast point
-              - allows for more imperative manipulation of observables, but try to avoid this
-                - usually a better way to do this with operators
+              - we have a sneaky side effect in the map (could've also been a `tap`)
               - trivia: `EventEmitter` is actually a subject
+              - can act as a multicast point (bridge/proxy)
+              - allows for more imperative manipulation of observables
+                - but usually a better way to do this with operators
+              - will be useful in some of the upcoming patterns
             </aside>
           </textarea>
         </section>
 
-        <section data-markdown>
+        <section data-markdown data-extended>
           <textarea data-template>
             ## `share`
 
@@ -1110,7 +1143,7 @@
           </textarea>
         </section>
 
-        <section data-markdown>
+        <section data-markdown data-extended>
           <textarea data-template>
             ## `shareReplay`
 
