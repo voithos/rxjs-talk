@@ -1357,13 +1357,10 @@
             ```typescript
             @Component({ ... })
             export class UniverseComponent implements OnInit {
-              // For more complex state, would need to encode "readiness"
-              // with `|null` type, or a separate property.
+              // Hard to trace how this state will change over time.
               galaxies: Galaxy[] = [];
               ngOnInit() {
                 this.route.data.galaxies.subscribe(galaxies => {
-                  // Manually merge multiple sources of initial state,
-                  // if needed.
                   this.galaxies = galaxies;
                 });
               }
@@ -1371,6 +1368,8 @@
                 this.universeService.deleteGalaxy(galaxy)
                     .subscribe(() => {
                       // Harder to test this logic in isolation.
+                      // Mutation also makes it more difficult to
+                      // use OnPush.
                       const index = this.galaxies.indexOf(galaxy);
                       this.galaxies.splice(index, 1);
                     });
@@ -1380,6 +1379,16 @@
               Notes:
               - omitting all the cleanup logic as well
               - could work, but gets harder as more sources of events are added
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            Instead, embrace observables and immutability
+
+            <aside class="notes">
+              Notes:
             </aside>
           </textarea>
         </section>
@@ -1402,6 +1411,7 @@
                 - in this case, deleting a galaxy
               - reducer is quite simple; operates on a normal array
               - benefit: immutability, easier to reason about
+              - immutability makes it easier to take advantage of OnPush
               - easier to test!
             </aside>
           </textarea>
@@ -1501,6 +1511,20 @@
               - important for there to be a single scan()!
                 - if this took just a single transform observable, and composed with itself, scan internal state could get out of sync
                 - only the downstream scan would see updates from the upstream on, so potential of mismatch
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## NgRx
+
+            This pattern is conceptually similar to the more
+            formalized/structured [ngrx](http://ngrx.github.io/) library, which
+            offers a lot of the same benefits.
+
+            <aside class="notes">
+              Notes:
             </aside>
           </textarea>
         </section>
