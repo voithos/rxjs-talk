@@ -1156,7 +1156,7 @@
             // Argument indicates how many emissions to replay
             // for new observers. When subscribers drops to 0,
             // source observable is unsubscribed from and never
-            // re-subscribed.
+            // re-subscribed to.
             const sharedObservable = intensiveObservable.pipe(
                 shareReplay(1),
             );
@@ -1341,10 +1341,45 @@
             ```
             <aside class="notes">
               Notes:
+              - going to be similar to the more formalized notions in ngrx
               - caveat: this pattern hasn't been vetted "in the wild"
-              - motivation, avoid .subscribe() soup
               - if there was a single action (say, delete), then it'd be straightforward to compose
               - but what if there are multiple action types? delete, add, refresh, etc?
+              - motivation, avoid .subscribe() soup
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## The "imperative" approach
+
+            ```typescript
+            @Component({ ... })
+            export class UniverseComponent implements OnInit {
+              // For more complex state, would need to encode "readiness"
+              // with `|null` type, or a separate property.
+              galaxies: Galaxy[] = [];
+              ngOnInit() {
+                this.route.data.galaxies.subscribe(galaxies => {
+                  // Manually merge multiple sources of initial state,
+                  // if needed.
+                  this.galaxies = galaxies;
+                });
+              }
+              deleteGalaxy(galaxy: Galaxy) {
+                this.universeService.deleteGalaxy(galaxy)
+                    .subscribe(() => {
+                      // Harder to test this logic in isolation.
+                      const index = this.galaxies.indexOf(galaxy);
+                      this.galaxies.splice(index, 1);
+                    });
+              }
+            ```
+            <aside class="notes">
+              Notes:
+              - omitting all the cleanup logic as well
+              - could work, but gets harder as more sources of events are added
             </aside>
           </textarea>
         </section>
@@ -1366,6 +1401,8 @@
               - think of a simple state transition that we're interested in
                 - in this case, deleting a galaxy
               - reducer is quite simple; operates on a normal array
+              - benefit: immutability, easier to reason about
+              - easier to test!
             </aside>
           </textarea>
         </section>
@@ -1403,6 +1440,9 @@
               - initial state loaded via a Route Resolver
               - the transforms are applied over time to the initial state
               - when calling `deleteGalaxies` on the service, could also do a `takeUntil(this.onDestroy)`
+              - easier to understand/reason about the flow of data in the component
+                - also easier to reason about time / asynchronicity
+              - easy to add new transforms in a structured way
             </aside>
           </textarea>
         </section>
