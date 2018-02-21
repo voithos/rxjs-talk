@@ -255,6 +255,138 @@
 
         <section data-markdown>
           <textarea data-template>
+            ## Creating observables
+
+            <aside class="notes">
+              Notes:
+              - some operators used to create observables from non-observable values
+              - e.g. primitives, promises, or even events
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## Observable.create
+
+            ```typescript
+            const interval = Observable.create(observer => {
+              // Executed upon subscription.
+              let value = 0;
+              const id = setInterval(() => {
+                value += Math.random();
+                if (value > 1) {
+                  observer.next(value);
+                  value = 0;
+                }
+              }, 1000);
+              return () => {
+                // Unsubscribe logic.
+                clearInterval(id);
+              };
+            });
+
+            interval.subscribe(v => ...);
+            ```
+            <aside class="notes">
+              Notes:
+              - here we have a strange, randomized interval fn
+              - the body of the Observable.create is only executed upon subscription
+              - can return an unsubscribe function
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `of`, `interval`, `from`, `fromPromise`
+
+            ```typescript
+            // Outputs: 1, 2, 3, 4
+            Observable.of(1, 2, 3, 4)
+                .subscribe(x => console.log(x));
+
+            // Outputs: 0, 1, 2, 3, ...
+            Observable.interval(500)
+                .subscribe(x => console.log(x));
+
+            // Converts the array to an observable of its items.
+            Observable.from([1, 2, 3])
+                .subscribe(x => ...);
+
+            // Converts the Promise to an observable.
+            // Could also have just used `from`.
+            Observable.fromPromise(fetch('spacetime.jpg'))
+                .subscribe(blob => ...);
+            ```
+            <aside class="notes">
+              Notes:
+              - `of` just outputs what is passed to it
+              - synchronous upon subscription
+              - `interval` outputs the index
+              - `from` can be used for promises, arrays, etc
+              - `fromPromise` may be more readable
+              - generally useful when converting non-observables into the observable space
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown data-extended>
+          <textarea data-template>
+            ## `empty`, `throw`, `never`
+
+            - `empty` - never emits, completes immediately
+            - `throw` - never emits, errors immediately
+            - `never` - never emits, never completes, never errors
+            <aside class="notes">
+              Notes:
+              - not immediately useful, but handy when composing observables (next)
+              - effects take place upon execution
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## Subjects
+
+            <aside class="notes">
+              Notes:
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## `Subject`
+
+            Both an Observer and an Observable
+
+            ```typescript
+            const subject = new Subject<number>();
+
+            // Both an observable...
+            subject.subscribe(v => console.log(v));
+
+            // And an observer.
+            otherObservable.subscribe(subject);
+
+            // Observer methods are directly callable.
+            subject.next(55);
+            subject.complete();
+            ```
+            <aside class="notes">
+              Notes:
+              - trivia: `EventEmitter` is actually a subject
+              - allows for more imperative manipulation of observables
+                - but usually a better way to do this with operators
+              - usually better to prefer Observable.create when possible
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
             # Operators
 
             There are a lot
@@ -289,61 +421,6 @@
                 - don't have to emit before completing
                 - might never complete
                 - etc
-            </aside>
-          </textarea>
-        </section>
-
-        <section data-markdown>
-          <textarea data-template>
-            ## Creation operators
-
-            <aside class="notes">
-              Notes:
-              - used to create observables from non-observable values
-              - e.g. primitives, promises, or even events
-            </aside>
-          </textarea>
-        </section>
-
-        <section data-markdown>
-          <textarea data-template>
-            ## `of`, `interval`, `from`
-
-            ```typescript
-            // Outputs: 1, 2, 3, 4
-            Observable.of(1, 2, 3, 4)
-                .subscribe(x => console.log(x));
-
-            // Outputs: 0, 1, 2, 3, ...
-            Observable.interval(500)
-                .subscribe(x => console.log(x));
-
-            // Converts the Promise to an observable.
-            Observable.from(fetch('spacetime.jpg'))
-                .subscribe(blob => ...);
-            ```
-            <aside class="notes">
-              Notes:
-              - `of` just outputs what is passed to it
-              - synchronous upon subscription
-              - `interval` outputs the index
-              - `from` can be used for promises, arrays, etc
-              - generally useful when converting non-observables into the observable space
-            </aside>
-          </textarea>
-        </section>
-
-        <section data-markdown data-extended>
-          <textarea data-template>
-            ## `empty`, `throw`, `never`
-
-            - `empty` - never emits, completes immediately
-            - `throw` - never emits, errors immediately
-            - `never` - never emits, never completes, never errors
-            <aside class="notes">
-              Notes:
-              - not immediately useful, but handy when composing observables (next)
-              - effects take place upon execution
             </aside>
           </textarea>
         </section>
@@ -1078,21 +1155,9 @@
           </textarea>
         </section>
 
-        <section data-markdown data-abridged>
+        <section data-markdown data-extended>
           <textarea data-template>
-            ## Subjects
-
-            <aside class="notes">
-              Notes:
-            </aside>
-          </textarea>
-        </section>
-
-        <section data-markdown>
-          <textarea data-template>
-            ## `Subject`
-
-            Both an Observer and an Observable
+            ## Using Subjects to multicast
 
             ```typescript
             const subject = new Subject<number>();
@@ -1116,10 +1181,7 @@
             <aside class="notes">
               Notes:
               - we have a sneaky side effect in the map (could've also been a `tap`)
-              - trivia: `EventEmitter` is actually a subject
               - can act as a multicast point (bridge/proxy)
-              - allows for more imperative manipulation of observables
-                - but usually a better way to do this with operators
               - will be useful in some of the upcoming patterns
             </aside>
           </textarea>
@@ -1287,6 +1349,34 @@
               - caveats:
                 - returns `null` until the observable actually emits, so blindly accessing properties on the result is dangerous
                 - each use of `async` creates a separate subscription! multiple executions if not multicasted
+            </aside>
+          </textarea>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## Using `let`
+
+            ```typescript
+            @Component({
+              template: `
+                <div let-curve="curvature | async">
+                  <div *ngIf="curve != null">
+                    Universe curvature is {{curve}}!
+                  </div>
+                  <div *ngIf="curve == null">
+                    Still calculating curvature...
+                  </div>
+                <div>`,
+            })
+            export class UniverseComponent implements OnInit {
+              ...
+            }
+            ```
+            <aside class="notes">
+              Notes:
+              - can use `let` in template to avoid using async pipe multiple times
+              - potentially avoid the need for multicasting
             </aside>
           </textarea>
         </section>
