@@ -270,15 +270,10 @@
             ## Observable.create
 
             ```typescript
-            const interval = Observable.create(observer => {
+            const random = Observable.create(observer => {
               // Executed upon subscription.
-              let value = 0;
               const id = setInterval(() => {
-                value += Math.random();
-                if (value > 1) {
-                  observer.next(value);
-                  value = 0;
-                }
+                observer.next(Math.random());
               }, 1000);
               return () => {
                 // Unsubscribe logic.
@@ -286,11 +281,11 @@
               };
             });
 
-            interval.subscribe(v => ...);
+            random.subscribe(v => ...);
             ```
             <aside class="notes">
               Notes:
-              - here we have a strange, randomized interval fn
+              - here we have an interval that emits random numbers (contrived)
               - the body of the Observable.create is only executed upon subscription
               - can return an unsubscribe function
             </aside>
